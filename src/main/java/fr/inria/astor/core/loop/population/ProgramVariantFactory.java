@@ -325,7 +325,6 @@ public class ProgramVariantFactory {
 	 * @return
 	 */
 	public ProgramVariant createProgramVariantFromAnother(ProgramVariant parentVariant, int id, int generation) {
-
 		ProgramVariant childVariant = new ProgramVariant(id);
 		childVariant.setGenerationSource(generation);
 		childVariant.setParent(parentVariant);
@@ -337,7 +336,6 @@ public class ProgramVariantFactory {
 		childVariant.getBuiltClasses().putAll(parentVariant.getBuiltClasses());
 		childVariant.setFitness(parentVariant.getFitness());
 		return childVariant;
-
 	}
 
 	/**

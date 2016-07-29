@@ -38,7 +38,7 @@ public class UniformRandomIngredientSearch extends AstorCtSearchStrategy {
 	 * @param fixSpace
 	 * @return
 	 */
-	protected CtCodeElement getRandomStatementFromSpace(List<CtCodeElement> fixSpace) {
+	protected CtCodeElement getRandomStatementFromSpace(List<CtCodeElement> fixSpace) {	// maybe here
 		int size = fixSpace.size();
 		int index = RandomManager.nextInt(size);
 		return fixSpace.get(index);
@@ -52,7 +52,7 @@ public class UniformRandomIngredientSearch extends AstorCtSearchStrategy {
 	 */
 	protected CtCodeElement getRandomElementFromSpace(CtElement location) {
 		CtCodeElement originalPicked = getRandomStatementFromSpace(this.ingredientSpace.getIngredients(location));
-		CtCodeElement cloned = MutationSupporter.clone(originalPicked);
+		CtCodeElement cloned = MutationSupporter.clone(originalPicked); //why cloned
 		return cloned;
 	}
 

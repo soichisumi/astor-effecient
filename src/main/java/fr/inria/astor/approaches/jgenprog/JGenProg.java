@@ -224,7 +224,7 @@ public class JGenProg extends AstorCoreEngine {
 		
 		Ingredient fix = null;
 		
-		if(operationType.needIngredient()){
+		if(operationType.needIngredient()){// whether the operation require other source code
 			fix = this.ingredientSearchStrategy.getFixIngredient(modificationPoint, operationType);
 			if(fix == null){
 				log.debug("Any ingredient for this point, we discard it");
