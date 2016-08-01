@@ -31,7 +31,6 @@ public class UniformRandomIngredientSearch extends AstorCtSearchStrategy {
 	}
 
 	private Logger logger = Logger.getLogger(UniformRandomIngredientSearch.class.getName());
-
 	
 	/**
 	 * 
