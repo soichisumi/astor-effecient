@@ -21,7 +21,7 @@ import spoon.reflect.declaration.CtElement;
  * is required
  * 
  * @author Matias Martinez, matias.martinez@inria.fr
- * @param <I>
+ * @param 
  *
  */
 public class UniformRandomIngredientSearch extends AstorCtSearchStrategy {

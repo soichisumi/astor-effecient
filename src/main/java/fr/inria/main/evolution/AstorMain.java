@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import fastrepair.ExactIngredientStrategy;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
@@ -69,9 +70,7 @@ public class AstorMain extends AbstractMain {
 
 	/**
 	 * It creates a repair engine according to an execution mode.
-	 * 
-	 * 
-	 * @param removeMode
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -236,9 +235,15 @@ public class AstorMain extends AbstractMain {
 	private IngredientSearchStrategy retrieveIngredientStrategy(IngredientSpace ingredientspace) throws Exception {
 		String strategy = ConfigurationProperties.properties.getProperty("ingredientstrategy");
 		IngredientSearchStrategy st = null;
+		System.out.println("selecting strategy");
 		if (strategy == null || strategy.trim().isEmpty()){
 			//AstorCtIngredientSpace ctIngredientSpace = (AstorCtIngredientSpace) ingredientspace;
 			st = new EfficientIngredientStrategy(ingredientspace);
+		}
+		else if(strategy.equals("exact")){
+			System.out.println("use proposition strategy");
+			st=new ExactIngredientStrategy(ingredientspace,ConfigurationProperties.properties.getProperty("reposPath"),
+					ConfigurationProperties.properties.getProperty("bugRevisionId"));
 		}
 		else{
 			st = loadCustomIngredientStrategy(strategy, ingredientspace);

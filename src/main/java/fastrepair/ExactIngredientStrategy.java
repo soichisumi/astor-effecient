@@ -1,5 +1,6 @@
 package fastrepair;
 
+import fastrepair.yousei.propose.StatementRecommender;
 import fr.inria.astor.approaches.jgenprog.operators.ReplaceOp;
 import fr.inria.astor.core.entities.Ingredient;
 import fr.inria.astor.core.entities.ModificationPoint;
@@ -8,6 +9,7 @@ import fr.inria.astor.core.loop.spaces.ingredients.ingredientSearch.UniformRando
 import fr.inria.astor.core.loop.spaces.ingredients.scopes.IngredientSpaceScope;
 import fr.inria.astor.core.loop.spaces.operators.AstorOperator;
 import fr.inria.astor.core.manipulation.sourcecode.VariableResolver;
+import fr.inria.astor.core.setup.ConfigurationProperties;
 import org.apache.log4j.Logger;
 import spoon.reflect.declaration.CtElement;
 
@@ -20,10 +22,13 @@ import java.util.Map;
 /**
  * Created by s-sumi on 16/08/01.
  */
-public class ExactIngredientStrategy extends UniformRandomIngredientSearch {
+public class ExactIngredientStrategy extends UniformEfficientIngredientSearch {
 
-    public ExactIngredientStrategy(IngredientSpace space) {
-        super(space);
+
+
+    public ExactIngredientStrategy(IngredientSpace space,String reposPath,String bugRevisionId) throws Exception{
+        super(space,reposPath,bugRevisionId);
+
     }
 
     protected Logger log = Logger.getLogger(this.getClass().getName());
@@ -40,9 +45,7 @@ public class ExactIngredientStrategy extends UniformRandomIngredientSearch {
      * ingredient.
      *
      * @param modificationPoint
-     * @param targetStmt
      * @param operationType
-     * @param elementsFromFixSpace
      * @return
      */
     @Override
@@ -54,13 +57,13 @@ public class ExactIngredientStrategy extends UniformRandomIngredientSearch {
 
         int elementsFromFixSpace = getSpaceSize(modificationPoint, operationType);
 
-        while (continueSearching && attempts < elementsFromFixSpace) {
-            Ingredient randomIngredient = super.getFixIngredient(modificationPoint, operationType);
+        while (continueSearching && attempts < elementsFromFixSpace) {  //取り出した回数がFixSpaceのサイズが上回ってないかみてるので、取り出すIndexが被ってはいけない。
+            Ingredient exactIngredient = super.getFixIngredient(modificationPoint, operationType);
 
-            if (randomIngredient == null || randomIngredient.getCode() == null) {
+            if (exactIngredient == null || exactIngredient.getCode() == null) {
                 return null;
             }
-            CtElement elementFromIngredient = randomIngredient.getCode();
+            CtElement elementFromIngredient = exactIngredient.getCode();
 
             attempts++;
 
