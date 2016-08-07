@@ -1,0 +1,481 @@
+package fastrepair.yousei.propose;
+
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import fastrepair.yousei.GeneralUtil;
+import fastrepair.yousei.propose.stmtcollector.AstCollectorVisitor;
+import fastrepair.yousei.propose.stmtcollector.AstLocation;
+import fastrepair.yousei.propose.stmtcollector.AstVector;
+import fastrepair.yousei.util.NodeClasses4Java;
+import fr.inria.astor.core.setup.ConfigurationProperties;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import spoon.reflect.cu.SourcePosition;
+import weka.classifiers.AbstractClassifier;
+import weka.classifiers.Classifier;
+import weka.classifiers.functions.LinearRegression;
+import weka.classifiers.lazy.IBk;
+import weka.core.Attribute;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Remove;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static fastrepair.yousei.GeneralUtil.*;
+
+
+/**
+ * Created by s-sumi on 16/07/23.
+ * 提案手法用のUtil集
+ */
+public class Util {
+
+    public static int smallchange=0;
+
+    public static String getSourceCodeFromClassName(String className){
+        List<Path> filesinFolder=null;
+        try {
+            filesinFolder = Files.walk(Paths.get(ConfigurationProperties.properties.getProperty("location")))
+                                .filter(Files::isRegularFile)
+                                .filter(p->p.endsWith(className+".java"))
+                                .collect(Collectors.toList());
+        }catch (Exception e){
+            e.printStackTrace();
+            return "";
+        }
+        if (filesinFolder.size()!=1)
+            System.out.println("there is some same file");
+
+        try {
+            return new String(Files.readAllBytes(filesinFolder.get(0)));
+        } catch (IOException e) {
+            throw new RuntimeException("exception");
+        }
+//        StringBuilder sb=new StringBuilder();
+//        try(Stream<String> stream=Files.lines(filesinFolder.get(0))){
+//            stream.forEach(sb::append);
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }
+//        return sb.toString();
+    }
+
+    /**
+     * 予測結果 - 元の状態ベクトル + 変更箇所の状態ベクトルをもつ文の集合を返す
+     * 頼むJDTとSpoonのColumn同じであってくれ〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜
+     * @param source
+     * @param vector
+     * @param sp   NULLABLE
+     * @return
+     */
+    public static List<AstLocation> getASTLocations(String source, AstVector vector, SourcePosition sp) throws Exception{
+        Multimap<AstVector, AstLocation> result = MultimapBuilder.hashKeys().arrayListValues().build();
+        ASTParser parser = ASTParser.newParser(AST.JLS8);
+
+        parser.setSource(source.toCharArray());
+        CompilationUnit unit = (CompilationUnit)parser.createAST(new NullProgressMonitor());
+        AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
+        unit.accept(visitor);
+        for (Map.Entry<AstVector, AstLocation> a : visitor.asts.entries()) {
+            result.put(a.getKey(), a.getValue());
+        }
+/*
+        int[] arr=new int[92];
+        Arrays.fill(arr,0);
+        AstVector av=new AstVector(arr);
+        if(sp!=null){
+            for(Map.Entry<AstVector,AstLocation> entry:visitor.asts.entries()){
+                if(sameLine(entry.getValue(),sp)){
+                    System.out.println("same position found");
+                    av=entry.getKey();  //ある文に対するAstvectorは一意に決まるはず
+                    break;
+                }
+            }
+        }*/
+
+        List<Map.Entry<AstVector,AstLocation>> vectors=new ArrayList<>();
+        if(sp!=null)
+            visitor.asts.entries().forEach((e)->{
+                if(sameLine(e.getValue(),sp))
+                    vectors.add(e);
+            });
+
+        vectors.sort((a,b)->statementPlausibility(a.getValue(),sp)-statementPlausibility(b.getValue(),sp));
+
+        List<Integer> original=GeneralUtil.getSourceVector4Java(source,".java");
+        int[] res=new int[92];
+        int[] predicted=vector.getArray();
+        int[] replaced=vectors.get(0).getKey().getArray();
+
+        for(int i = 0; i<vector.getArray().length; i++){
+            res[i]=predicted[i]-original.get(i)+replaced[i];
+            if(res[i]<0)
+                res[i]=0;
+        }
+
+        printVectors(original,predicted,replaced,res);
+
+        return (List<AstLocation>)result.get(new AstVector(res));
+    }
+    public static List<AstLocation> getSimilarStatements(){
+
+    }
+
+    public static void printVectors(List<Integer> ori,int[] pred,int[] replaced, int[] res){
+        System.out.println("state vector discription:");
+        System.out.print("original: \t");       printSingleVector(ori);
+        System.out.print("predicted:\t");       printSingleVector(pred);
+        System.out.print("replaced: \t");       printSingleVector(replaced);
+        System.out.print("finally:  \t");       printSingleVector(res);
+        System.out.println();
+    }
+    public static void printSingleVector(List<Integer> vector){
+        StringBuilder sb=new StringBuilder();
+        sb.append("[");
+        for(int i=0;i<vector.size();i++){
+            sb.append(vector.get(i));//append内でString.valueOfしてる
+            if(i!=vector.size()-1)
+                sb.append(",");
+        }
+        sb.append("]");
+        System.out.println(sb.toString());
+    }
+    public static void printSingleVector(int[] vector){
+        StringBuilder sb=new StringBuilder();
+        sb.append("[");
+        for(int i=0;i<vector.length;i++){
+            sb.append(vector[i]);//append内でString.valueOfしてる
+            if(i!=vector.length-1)
+                sb.append(",");
+        }
+        sb.append("]");
+        System.out.println(sb.toString());
+    }
+
+
+    public static int statementPlausibility(AstLocation loc,SourcePosition sp){ //0 is the best
+        return Math.abs(sp.getColumn()-loc.startColumn)+Math.abs(sp.getEndColumn()-loc.endColumn);
+    }
+
+    public static boolean sameLine(AstLocation loc, SourcePosition position){
+        return loc.startLine==position.getLine() && loc.endLine==position.getEndLine();
+    }
+
+    public static AstVector toAstVector(List<Integer> vector){
+        if (vector == null || vector.size() != 92) {
+            throw new IllegalArgumentException();
+        }
+        int[] res=new int[92];
+        for (int i=0;i<res.length;i++){
+            res[i]=vector.get(i);
+        }
+        return new AstVector(res);
+    }
+
+
+    //create arff having only 1 instance, maybe being all postvector ? is ok
+    public static File createSouceArff4VectorPrediction(String source)throws Exception{
+        NodeClasses4Java nc = new NodeClasses4Java();
+        File tmpFile = File.createTempFile("bugSource4VectorPrediction", ".arff", GeneralUtil.workingDir);
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile));
+        bw.write("@relation StateVector");
+        bw.newLine();
+        bw.newLine();
+        for (Map.Entry<String, Integer> e : nc.dictionary4j.entrySet()) {
+            bw.write("@attribute " + e.getKey() + " numeric");
+            bw.newLine();
+        }
+        for (Map.Entry<String, Integer> e : nc.dictionary4j.entrySet()) {
+            bw.write("@attribute " + e.getKey() + "2 numeric");
+            bw.newLine();
+        }
+        bw.newLine();
+
+        bw.write("@data");
+        bw.newLine();
+
+        List<Integer> sourceVector= GeneralUtil.getSourceVector4Java(source,".java");//4java ttearundakara javasikanakunai
+
+        writeVector(bw, sourceVector);
+        bw.write(",");
+        writeQuestions(bw,sourceVector);
+        bw.newLine();
+        bw.close();
+        return tmpFile;
+    }
+
+    public static File createSourceArff4SizePrediction(String source)throws Exception{
+        NodeClasses4Java nc = new NodeClasses4Java();
+        File tmpFile = File.createTempFile("bugSource4SizePrediction", ".arff", GeneralUtil.workingDir);
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile));
+        bw.write("@relation StateVector");
+        bw.newLine();
+        bw.newLine();
+        for (Map.Entry<String, Integer> e : nc.dictionary4j.entrySet()) {
+            bw.write("@attribute " + e.getKey() + " numeric");
+            bw.newLine();
+        }
+
+        bw.write("@attribute size {big,small}");
+        bw.newLine();
+
+        bw.newLine();
+
+        bw.write("@data");
+        bw.newLine();
+
+        List<Integer> sourceVector=GeneralUtil.getSourceVector4Java(source,".java");//4java ttearundakara javasikanakunai
+
+        writeVector(bw, sourceVector);
+        bw.write(",big");
+        bw.newLine();
+        bw.close();
+        return tmpFile;
+    }
+
+    public static File genealogy2Arff4VectorPrediction(List<List<Integer>> preVector, List<List<Integer>> postVector) throws Exception {
+        smallchange=0;
+        NodeClasses4Java nc = new NodeClasses4Java();
+        File tmpFile = File.createTempFile("genealogy4VectorPrediction", ".arff", GeneralUtil.workingDir);
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile));
+        bw.write("@relation StateVector");
+        bw.newLine();
+        bw.newLine();
+        for (Map.Entry<String, Integer> e : nc.dictionary4j.entrySet()) {
+            bw.write("@attribute " + e.getKey() + " numeric");
+            bw.newLine();
+        }
+        for (Map.Entry<String, Integer> e : nc.dictionary4j.entrySet()) {
+            bw.write("@attribute " + e.getKey() + "2 numeric");
+            bw.newLine();
+        }
+        bw.newLine();
+
+        bw.write("@data");
+        bw.newLine();
+        for (int i = 0; i < preVector.size(); i++) {
+            if (GeneralUtil.diffIsBig(preVector.get(i), postVector.get(i), GeneralUtil.SMALLTHRESHOLD))
+                continue;
+
+            smallchange++;
+
+            writeVector(bw, preVector.get(i));
+            bw.write(",");
+            writeVector(bw, postVector.get(i));
+            bw.newLine();
+        }
+
+        bw.close();
+        return tmpFile;
+    }
+
+    /**
+     * assume arff like (attr,attr.....(only one vector) , big or small)
+     * @return return true if next change is big
+     */
+    public static boolean predictSizeObNextChange(File arffData, File bugArffData) throws Exception{
+        Instances learningData=getInstances(arffData);
+        learningData.setClassIndex(learningData.numAttributes()-1);  //index starts with 0
+        learningData = GeneralUtil.useFilter(learningData);
+
+        Instances bugData=getInstances(bugArffData);
+        bugData=makeSameAttrData(learningData,bugData);
+
+        //in Murakami's thesis: we use k=1 because k=1 can produce results in the shortest time
+        IBk ibk=new IBk();
+        ibk.setOptions("-K 1".split(" "));
+
+        ibk.buildClassifier(learningData);
+
+        int res = Double.valueOf(ibk.classifyInstance(bugData.instance(0))).intValue();//ex: 13.999 ->13
+        return res == 0;
+    }
+
+    public static List<Double> vectoredPrediction(File arffData, File bugArffData) throws Exception {
+        int numAttribute = getNumAttribute(arffData);
+
+        List<Instances> filteredData = GeneralUtil.getFilteredData(arffData, numAttribute);
+
+
+        LinearRegression lr = new LinearRegression();
+        String[] options = "-S 0".split(" ");
+        lr.setOptions(options);
+
+        List<Classifier> classifiers = new ArrayList<>();
+        for (int i = 0; i < numAttribute; i++) {         //各ノードに対する予測器を構築
+            Classifier copied = AbstractClassifier.makeCopy(lr);
+            copied.buildClassifier(filteredData.get(i));
+            classifiers.add(copied);
+        }
+
+        classifiers.forEach(Classifier::toString);
+
+        List<Instance> attrSelectedData=getAttrSelectedData(bugArffData,filteredData);
+        List<Double> res=new ArrayList<>();
+        for (int i = 0; i < numAttribute; i++) {
+            res.add(
+                classifiers.get(i).classifyInstance(attrSelectedData.get(i))
+            );
+        }
+
+        return res;
+    }
+
+    /**
+     * returns Instances::numAttribute / 2 .
+     * @param arffData
+     * @return
+     * @throws IOException
+     */
+    public static int getNumAttribute(File arffData) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(arffData));
+        Instances instances = new Instances(br);
+        int numAttribute = instances.numAttributes() / 2;//arff has 2 vector in an instance
+        br.close();
+        return numAttribute;
+    }
+
+    /**
+     * 各filteredDataに対して同じattributeを持つinstanceを作る
+     * @param bugArff
+     * @param filteredData
+     * @return
+     * @throws Exception
+     */
+    public static List<Instance> getAttrSelectedData(File bugArff,List<Instances> filteredData)throws Exception{
+        List<Instances> tmp=new ArrayList<>();
+
+        for(int i=0;i<filteredData.size();i++){
+            BufferedReader br2 = new BufferedReader(new FileReader(bugArff));
+            Instances bugInstances = new Instances(br2);
+            br2.close();
+
+            Instances filteredInstances=filteredData.get(i);
+            tmp.add(makeSameAttrData(filteredInstances,bugInstances));
+        }
+
+        List<Instance> res=new ArrayList<>();
+        for(Instances i:tmp){
+            if(i.numInstances()!=1)
+                throw new Exception("there is 2 or more instances. what happened.");
+
+            res.add(i.instance(0));
+        }
+
+        return res;
+    }
+
+    /**
+     * ２つのInstancesを受け取って、同じattribute名のattributeを残す
+     * @param valid
+     * @param manipulate
+     * @return
+     * @throws Exception
+     */
+    public static Instances makeSameAttrData(Instances valid,Instances manipulate)throws Exception{
+        Instances copied=new Instances(manipulate);
+
+        Remove remove=new Remove();
+        StringBuilder remaining =new StringBuilder();
+        for(int i=0;i<valid.numAttributes();i++){ //make a string like: 1,3,5,6,7-10
+            /*remaining.append(
+                    String.valueOf(getAttrNum(valid.attribute(i),copied)+1)
+                            +",");*/
+            for(int j=0;j<copied.numAttributes();j++){
+                if(Objects.equals(valid.attribute(i).name(),copied.attribute(j).name())) {
+                    if(remaining.length()!=0)//最初以外の数字の前にはカンマ
+                        remaining.append(",");
+                    remaining.append(Integer.toString(j + 1));
+                }
+
+            }
+        }
+        //remaining.append(copied.numAttributes());//add classindex
+        remove.setAttributeIndices(remaining.toString());
+        remove.setInvertSelection(true);    //written index will be selected
+        remove.setInputFormat(copied);
+
+        Instances res=Filter.useFilter(copied,remove);
+
+        /*Add add=new Add();
+        add.setAttributeIndex("last");
+        add.setAttributeName(valid.attribute(valid.));*/
+
+        res.setClassIndex(res.numAttributes()-1);
+        if(valid.instance(0).numAttributes()!=res.instance(0).numAttributes()
+                || !hasSameAttributes(valid.instance(0),res.instance(0)))
+            throw new Exception("here is a bug");
+
+        return res;
+    }
+
+    public static boolean hasSameAttributes(Instance a,Instance b){
+        boolean flag=true;
+        for(int i=0;i<a.numAttributes();i++){
+            if(!a.attribute(i).equals(b.attribute(i))){ //attributeはちゃんとequalsを実装している
+                flag=false;
+                break;
+            }
+        }
+        return flag;
+    }
+
+    public static Integer getAttrNum(Attribute attribute,Instances testee)throws Exception{//testee has n attribute and 1 classvalue
+        for(int i=0;i<testee.numAttributes()-1;i++)
+            if(Objects.equals(testee.attribute(i).name(),attribute.name()))
+                return i;
+
+        throw new Exception("an error occured");
+    }
+
+
+    /**
+     * 全ての変更から変更の大きさ予測用の学習データを作成する
+     * @param preVector
+     * @param postVector
+     * @return
+     * @throws Exception
+     */
+    public static File genealogy2Arff4SizePrediction(List<List<Integer>> preVector, List<List<Integer>> postVector) throws Exception {
+        NodeClasses4Java nc = new NodeClasses4Java();
+        File tmpFile = File.createTempFile("genealogy4SizePrediction", ".arff", GeneralUtil.workingDir);
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile));
+        bw.write("@relation StateVector");
+        bw.newLine();
+        bw.newLine();
+        for (Map.Entry<String, Integer> e : nc.dictionary4j.entrySet()) {
+            bw.write("@attribute " + e.getKey() + " numeric");
+            bw.newLine();
+        }
+        bw.write("@attribute size {big,small}");
+        bw.newLine();
+
+        bw.newLine();
+
+        bw.write("@data");
+        bw.newLine();
+        for (int i = 0; i < preVector.size(); i++) {
+            writeVector(bw, preVector.get(i)); bw.write(",");
+            //writeVector(bw, postVector.get(i)); bw.write(",");
+
+            if(diffIsBig(preVector.get(i),postVector.get(i),GeneralUtil.SMALLTHRESHOLD)){
+                bw.write("big");
+            }else{
+                bw.write("small");
+            }
+            bw.newLine();
+        }
+
+        bw.close();
+        return tmpFile;
+    }
+}

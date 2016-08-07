@@ -46,9 +46,14 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
         String modifyClassName = location.getCtClass().getSimpleName();
         SourcePosition modifyPosition = location.getCodeElement().getPosition();
+        System.out.println("predict for: "+modifyClassName);
         List<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromClassName(modifyClassName), modifyPosition);
-        int res=findNextStatement(fixSpace,locations,modifyClassName); //resは
+        System.out.println("get ingredient from fixspace....");
+        int res= locations==null ?
+                fixSpace.size() :
+                findNextStatement(fixSpace,locations,modifyClassName);
         if(res==fixSpace.size()) {  //indexがsizeと等しいなら検索が終わったとする。その時はspaceからランダムに選択
+            System.out.println("use default search");
             int size = fixSpace.size();
             res = RandomManager.nextInt(size);
         }
@@ -58,8 +63,10 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected int findNextStatement(List<CtCodeElement> space, List<AstLocation> locations, String className) {
         Integer index=indexes.getOrDefault(className,0);
         while(index<space.size()){
-            if(isRecommended(space.get(index),locations))
+            if(isRecommended(space.get(index),locations)) {
+                System.out.println("[ "+space.get(index).toString()+" ] is recommended statement");
                 break;
+            }
             index++;
         }
         indexes.put(className,index);

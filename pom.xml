@@ -49,11 +49,11 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/LibSVM -->
-		<dependency>
+		<!--<dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
 			<artifactId>LibSVM</artifactId>
 			<version>1.0.8</version>
-		</dependency>
+		</dependency>-->
 
 		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
 		<dependency>
