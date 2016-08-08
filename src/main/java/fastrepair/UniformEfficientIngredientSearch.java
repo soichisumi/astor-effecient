@@ -12,6 +12,7 @@ import fr.inria.astor.core.loop.spaces.operators.AstorOperator;
 import fr.inria.astor.core.manipulation.MutationSupporter;
 import fr.inria.astor.core.setup.RandomManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LocationInfo;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
@@ -42,21 +43,32 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
      * ->Searchはランダムな順に取り出すことのみを担当する。Strategyでattempt が　fix space sizeを超えたかどうかを判定する
      * まずシャッフル->予測結果に合致するものを先頭に->取り出す
      */
-    protected CtCodeElement getNextStatementFromSpace(ModificationPoint location) {    //ちょっとやばいコードを書くぞ
+    protected CtCodeElement getNextStatementFromSpace(ModificationPoint location,AstorOperator operationType) {    //ちょっとやばいコードを書くぞ
+        if (location.getCodeElement().getPosition().getLine()==72)
+            System.out.println("point found");
+
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
-        String modifyClassName = location.getCtClass().getSimpleName();
+
         SourcePosition modifyPosition = location.getCodeElement().getPosition();
+        String modifyClassName = location.getCtClass().getSimpleName();
         System.out.println("predict for: "+modifyClassName);
         List<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromClassName(modifyClassName), modifyPosition);
         System.out.println("get ingredient from fixspace....");
+        System.out.println("get ingredient for "+ location.getCodeElement().toString()+" "+operationType.toString());
         int res= locations==null ?
                 fixSpace.size() :
-                findNextStatement(fixSpace,locations,modifyClassName);
+                findNextStatement(fixSpace,locations,
+                        modifyClassName+
+                        location.getCodeElement().getPosition().getLine()+","+
+                        location.getCodeElement().getPosition().getColumn()+","+
+                        location.getCodeElement().getPosition().getEndLine()+","+
+                        location.getCodeElement().getPosition().getEndColumn()+","+operationType.toString());
         if(res==fixSpace.size()) {  //indexがsizeと等しいなら検索が終わったとする。その時はspaceからランダムに選択
             System.out.println("use default search");
             int size = fixSpace.size();
             res = RandomManager.nextInt(size);
         }
+        System.out.println("use :"+  fixSpace.get(res).toString());
         return fixSpace.get(res);
     }
 
@@ -69,7 +81,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
             }
             index++;
         }
-        indexes.put(className,index);
+        indexes.put(className,index==space.size() ? space.size() : index+1);
         return index;
     }
 
@@ -81,10 +93,12 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
         return false;
     }
     private boolean sameStatement(CtCodeElement element,AstLocation recommended){
-        return element.getPosition().getLine()==recommended.startLine &&
+        /*return element.getPosition().getLine()==recommended.startLine &&
                 element.getPosition().getColumn()==recommended.startColumn &&
                 element.getPosition().getEndLine()==recommended.endLine &&
-                element.getPosition().getEndColumn()==recommended.endColumn;
+                element.getPosition().getEndColumn()==recommended.endColumn;*/
+        return element.getPosition().getLine()==recommended.startLine &&
+                element.getPosition().getEndLine()==recommended.endLine;
     }
 
 
@@ -94,17 +108,17 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
      *
      * @return
      */
-    protected CtCodeElement getNextElementFromSpace(ModificationPoint location) {
-        CtCodeElement originalPicked = getNextStatementFromSpace(location);
+    protected CtCodeElement getNextElementFromSpace(ModificationPoint location,AstorOperator operationType) {
+        CtCodeElement originalPicked = getNextStatementFromSpace(location,operationType);
         CtCodeElement cloned = MutationSupporter.clone(originalPicked);
         return cloned;
     }
 
-    protected CtCodeElement getNextElementFromSpace(ModificationPoint location, String type) {
+    protected CtCodeElement getNextElementFromSpace(ModificationPoint location, String type,AstorOperator operationType) {
         List<CtCodeElement> elements = this.ingredientSpace.getIngredients(location.getCodeElement(), type);
         if (elements == null)
             return null;
-        return getNextStatementFromSpace(location);
+        return getNextStatementFromSpace(location,operationType);
     }
 
     @Override
@@ -117,9 +131,9 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
 
         CtElement selectedIngredient = null;
         if (type == null) {
-            selectedIngredient = this.getNextElementFromSpace(modificationPoint);
+            selectedIngredient = this.getNextElementFromSpace(modificationPoint,operationType);
         } else {
-            selectedIngredient = this.getNextElementFromSpace(modificationPoint, type);
+            selectedIngredient = this.getNextElementFromSpace(modificationPoint, type,operationType);
         }
 
         return new Ingredient(selectedIngredient, null);

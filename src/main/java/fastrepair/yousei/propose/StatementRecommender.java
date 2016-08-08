@@ -55,16 +55,16 @@ public class StatementRecommender {
         ChangeSizePredictor csp=new ChangeSizePredictor(this.bugRevisionId,
                 bugSourceCode,this.repository);
         try {
-            if(!csp.nextChangeIsBig()){
+            if(/*!csp.nextChangeIsBig()*/true){
                 System.out.println("OK. next change is small\n");
-                csp.printChangeSizes();
+                //csp.printChangeSizes();
 
                 System.out.println("predict next source");
-                SourceVectorPredictor svp=new SourceVectorPredictor(this.bugRevisionId,
+                /*SourceVectorPredictor svp=new SourceVectorPredictor(this.bugRevisionId,
                         bugSourceCode,this.repository);
                 List<Double> resDouble=svp.getNextVector();
-                List<Integer> resInt= resDouble.stream().map(d -> (int) Math.round(d)).collect(Collectors.toList());
-                List<AstLocation> locations =Util.getASTLocations(bugSourceCode,Util.toAstVector(resInt),sp);//予測結果-元の状態ベクトル+変更箇所の状態ベクトルをもつ文の集合を返す
+                List<Integer> resInt= resDouble.stream().map(d -> (int) Math.round(d)).collect(Collectors.toList());*/
+                List<AstLocation> locations =Util.getASTLocations(bugSourceCode,null/*Util.toAstVector(resInt)*/,sp);//予測結果-元の状態ベクトル+変更箇所の状態ベクトルをもつ文の集合を返す
                 System.out.println("prediction done");
                 System.out.println("prediction size is: "+locations.size());
                 return locations;

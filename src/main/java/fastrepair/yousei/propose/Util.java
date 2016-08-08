@@ -8,6 +8,7 @@ import fastrepair.yousei.propose.stmtcollector.AstLocation;
 import fastrepair.yousei.propose.stmtcollector.AstVector;
 import fastrepair.yousei.util.NodeClasses4Java;
 import fr.inria.astor.core.setup.ConfigurationProperties;
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -88,19 +89,6 @@ public class Util {
         for (Map.Entry<AstVector, AstLocation> a : visitor.asts.entries()) {
             result.put(a.getKey(), a.getValue());
         }
-/*
-        int[] arr=new int[92];
-        Arrays.fill(arr,0);
-        AstVector av=new AstVector(arr);
-        if(sp!=null){
-            for(Map.Entry<AstVector,AstLocation> entry:visitor.asts.entries()){
-                if(sameLine(entry.getValue(),sp)){
-                    System.out.println("same position found");
-                    av=entry.getKey();  //ある文に対するAstvectorは一意に決まるはず
-                    break;
-                }
-            }
-        }*/
 
         List<Map.Entry<AstVector,AstLocation>> vectors=new ArrayList<>();
         if(sp!=null)
@@ -113,21 +101,61 @@ public class Util {
 
         List<Integer> original=GeneralUtil.getSourceVector4Java(source,".java");
         int[] res=new int[92];
-        int[] predicted=vector.getArray();
+        int[] predicted=/*vector.getArray();*/ArrayUtils.toPrimitive(original.toArray(new Integer[original.size()]));
         int[] replaced=vectors.get(0).getKey().getArray();
 
-        for(int i = 0; i<vector.getArray().length; i++){
+        for(int i = 0; i</*vector.getArray().length*/original.size(); i++){
             res[i]=predicted[i]-original.get(i)+replaced[i];
             if(res[i]<0)
                 res[i]=0;
         }
 
-        printVectors(original,predicted,replaced,res);
+        printVectors(original,predicted,replaced,res);  //finally is equal to replaced when original is equal to predicted
 
-        return (List<AstLocation>)result.get(new AstVector(res));
+        List<AstLocation> statements=new ArrayList<>();
+        statements.addAll(result.get(new AstVector(res)));
+        statements.addAll(getSimilarStatements(visitor.asts,res,1));
+
+        if(containStatementWhich(statements,59,59) || containStatementWhich(statements,66,66))
+            System.out.println("solution statement contained");
+
+        return statements;
     }
-    public static List<AstLocation> getSimilarStatements(){
+    public static boolean containStatementWhich(List<AstLocation> statements, int startLine, int endLine){
+        boolean flag=false;
+        for(int i=0;i<statements.size();i++){
+            if(statements.get(i).startLine==startLine && statements.get(i).endLine==endLine){
+                flag=true;
+            }
+        }
+        return flag;
+    }
 
+    public static List<AstLocation> getSimilarStatementsRanged(Multimap<AstVector, AstLocation> asts, int[] query, int distance){
+        List<AstLocation> res=new ArrayList<>();
+        for(int i=1;i<=distance;i++){
+            res.addAll(getSimilarStatements(asts,query,i));
+        }
+        return res;
+    }
+
+    public static List<AstLocation> getSimilarStatements(Multimap<AstVector, AstLocation> asts, int[] query, int distance){
+        List<AstLocation> res=new ArrayList<>();
+        for(Map.Entry<AstVector,AstLocation> e:asts.entries()){
+            if(getDistance(e.getKey(),query)==distance)
+                res.add(e.getValue());
+        }
+        return res;
+    }
+    public static int getDistance(AstVector a,int[] b){
+        int res=0;
+        int[] tmp=a.getArray();
+        if(tmp.length!=b.length)
+            throw new RuntimeException();
+        for(int i=0;i<tmp.length;i++){
+            res+=Math.abs(tmp[i]-b[i]);
+        }
+        return res;
     }
 
     public static void printVectors(List<Integer> ori,int[] pred,int[] replaced, int[] res){

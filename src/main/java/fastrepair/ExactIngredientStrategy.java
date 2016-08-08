@@ -168,11 +168,6 @@ public class ExactIngredientStrategy extends UniformEfficientIngredientSearch {
 
     /**
      * Check if the ingredient was already used
-     *
-     * @param id
-     *            program instance id.
-     * @param fix
-     * @param location
      * @return
      */
     protected boolean alreadySelected(ModificationPoint gen, CtElement fixElement, AstorOperator operator) {
