@@ -28,9 +28,9 @@ import java.util.Map;
 public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     public StatementRecommender sr;
 
-    public UniformEfficientIngredientSearch(IngredientSpace space, String reposPath, String bugRevisionId) throws Exception {
+    public UniformEfficientIngredientSearch(IngredientSpace space) throws Exception {
         super(space);
-        sr = new StatementRecommender(reposPath, bugRevisionId);
+        sr = new StatementRecommender();
     }
 
     public Map<String, Integer> indexes = new HashMap<>();
@@ -44,9 +44,6 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
      * まずシャッフル->予測結果に合致するものを先頭に->取り出す
      */
     protected CtCodeElement getNextStatementFromSpace(ModificationPoint location,AstorOperator operationType) {    //ちょっとやばいコードを書くぞ
-        if (location.getCodeElement().getPosition().getLine()==72)
-            System.out.println("point found");
-
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
 
         SourcePosition modifyPosition = location.getCodeElement().getPosition();
@@ -67,6 +64,8 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
             System.out.println("use default search");
             int size = fixSpace.size();
             res = RandomManager.nextInt(size);
+        }else{
+            System.out.println("use prediction based search");
         }
         System.out.println("use :"+  fixSpace.get(res).toString());
         return fixSpace.get(res);
@@ -121,7 +120,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
         return getNextStatementFromSpace(location,operationType);
     }
 
-    @Override
+    @Override   //実際はこれを使っている
     public Ingredient getFixIngredient(ModificationPoint modificationPoint, AstorOperator operationType) {
 
         String type = null;

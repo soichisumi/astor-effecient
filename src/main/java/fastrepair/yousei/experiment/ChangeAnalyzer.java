@@ -1,9 +1,7 @@
 package fastrepair.yousei.experiment;
 
 import fastrepair.yousei.util.CppSourceAnalyzer;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -44,7 +42,7 @@ public class ChangeAnalyzer {
         this.oldRev = this.newRev.getParent(0);
     }
 
-    public void analyzeChange() throws IOException, GitAPIException, CoreException {
+    public void analyzeChange() throws Exception{
         String oldsourceString;
         String newsourceString;
 

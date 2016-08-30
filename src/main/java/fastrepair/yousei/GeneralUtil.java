@@ -2,7 +2,6 @@ package fastrepair.yousei;
 
 import fastrepair.yousei.util.CppSourceAnalyzer;
 import fastrepair.yousei.util.JavaSourceAnalyzer;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
@@ -44,11 +43,11 @@ public class GeneralUtil {
         return rw;
     }
 
-    public static Map<String, Integer> getSourceVector(String source) throws IOException, CoreException {
+    public static Map<String, Integer> getSourceVector(String source) throws Exception{
         return getSourceVector(source, ".cpp");
     }
 
-    public static Map<String, Integer> getSourceVector(String source, String suffix) throws IOException, CoreException {
+    public static Map<String, Integer> getSourceVector(String source, String suffix) throws Exception{
         File tmpFile = File.createTempFile("tmp", suffix, workingDir);
         BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile));
         bw.write(source);
@@ -60,7 +59,7 @@ public class GeneralUtil {
         return res;
     }
 
-    public static List<Integer> getSourceVector4Java(String source, String suffix) throws IOException, CoreException {
+    public static List<Integer> getSourceVector4Java(String source, String suffix) throws Exception {
         File tmpFile = File.createTempFile("tmp", suffix, workingDir);
         BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile));
         bw.write(source);

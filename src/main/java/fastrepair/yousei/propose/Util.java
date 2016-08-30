@@ -9,7 +9,6 @@ import fastrepair.yousei.propose.stmtcollector.AstVector;
 import fastrepair.yousei.util.NodeClasses4Java;
 import fr.inria.astor.core.setup.ConfigurationProperties;
 import org.apache.commons.lang3.ArrayUtils;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -78,12 +77,12 @@ public class Util {
      * @param sp   NULLABLE
      * @return
      */
-    public static List<AstLocation> getASTLocations(String source, AstVector vector, SourcePosition sp) throws Exception{
+    public static List<AstLocation> getASTLocations(String source, AstVector vector, SourcePosition sp) throws Exception{   //boolean packageと、そのパース結果を追加
         Multimap<AstVector, AstLocation> result = MultimapBuilder.hashKeys().arrayListValues().build();
         ASTParser parser = ASTParser.newParser(AST.JLS8);
 
         parser.setSource(source.toCharArray());
-        CompilationUnit unit = (CompilationUnit)parser.createAST(new NullProgressMonitor());
+        CompilationUnit unit = (CompilationUnit)parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
         AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
         unit.accept(visitor);
         for (Map.Entry<AstVector, AstLocation> a : visitor.asts.entries()) {
@@ -97,27 +96,24 @@ public class Util {
                     vectors.add(e);
             });
 
-        vectors.sort((a,b)->statementPlausibility(a.getValue(),sp)-statementPlausibility(b.getValue(),sp));
+        vectors.sort((a,b)->statementPlausibility(a.getValue(),sp)-statementPlausibility(b.getValue(),sp));//入れ替える文と思われる文を探すためにソート
 
         List<Integer> original=GeneralUtil.getSourceVector4Java(source,".java");
         int[] res=new int[92];
-        int[] predicted=/*vector.getArray();*/ArrayUtils.toPrimitive(original.toArray(new Integer[original.size()]));
+        int[] predicted=vector.getArray();/*ArrayUtils.toPrimitive(original.toArray(new Integer[original.size()]));*/
         int[] replaced=vectors.get(0).getKey().getArray();
 
-        for(int i = 0; i</*vector.getArray().length*/original.size(); i++){
-            res[i]=predicted[i]-original.get(i)+replaced[i];
+        for(int i = 0; i<vector.getArray().length; i++){
+            res[i]=/*predicted[i]-original.get(i)+*/replaced[i];
             if(res[i]<0)
                 res[i]=0;
         }
 
-        printVectors(original,predicted,replaced,res);  //finally is equal to replaced when original is equal to predicted
+        //printVectors(original,predicted,replaced,res);  //finally is equal to replaced when original is equal to predicted
 
         List<AstLocation> statements=new ArrayList<>();
         statements.addAll(result.get(new AstVector(res)));
-        statements.addAll(getSimilarStatements(visitor.asts,res,1));
-
-        if(containStatementWhich(statements,59,59) || containStatementWhich(statements,66,66))
-            System.out.println("solution statement contained");
+        statements.addAll(getSimilarStatements(visitor.asts,res,5));
 
         return statements;
     }
@@ -143,6 +139,14 @@ public class Util {
         List<AstLocation> res=new ArrayList<>();
         for(Map.Entry<AstVector,AstLocation> e:asts.entries()){
             if(getDistance(e.getKey(),query)==distance)
+                res.add(e.getValue());
+        }
+        return res;
+    }
+    public static List<AstLocation> getSimilarStatementsWithThreshold(Multimap<AstVector, AstLocation> asts, int[] query, int distance){
+        List<AstLocation> res=new ArrayList<>();
+        for(Map.Entry<AstVector,AstLocation> e:asts.entries()){
+            if(getDistance(e.getKey(),query)<=distance)
                 res.add(e.getValue());
         }
         return res;
@@ -304,58 +308,6 @@ public class Util {
 
         bw.close();
         return tmpFile;
-    }
-
-    /**
-     * assume arff like (attr,attr.....(only one vector) , big or small)
-     * @return return true if next change is big
-     */
-    public static boolean predictSizeObNextChange(File arffData, File bugArffData) throws Exception{
-        Instances learningData=getInstances(arffData);
-        learningData.setClassIndex(learningData.numAttributes()-1);  //index starts with 0
-        learningData = GeneralUtil.useFilter(learningData);
-
-        Instances bugData=getInstances(bugArffData);
-        bugData=makeSameAttrData(learningData,bugData);
-
-        //in Murakami's thesis: we use k=1 because k=1 can produce results in the shortest time
-        IBk ibk=new IBk();
-        ibk.setOptions("-K 1".split(" "));
-
-        ibk.buildClassifier(learningData);
-
-        int res = Double.valueOf(ibk.classifyInstance(bugData.instance(0))).intValue();//ex: 13.999 ->13
-        return res == 0;
-    }
-
-    public static List<Double> vectoredPrediction(File arffData, File bugArffData) throws Exception {
-        int numAttribute = getNumAttribute(arffData);
-
-        List<Instances> filteredData = GeneralUtil.getFilteredData(arffData, numAttribute);
-
-
-        LinearRegression lr = new LinearRegression();
-        String[] options = "-S 0".split(" ");
-        lr.setOptions(options);
-
-        List<Classifier> classifiers = new ArrayList<>();
-        for (int i = 0; i < numAttribute; i++) {         //各ノードに対する予測器を構築
-            Classifier copied = AbstractClassifier.makeCopy(lr);
-            copied.buildClassifier(filteredData.get(i));
-            classifiers.add(copied);
-        }
-
-        classifiers.forEach(Classifier::toString);
-
-        List<Instance> attrSelectedData=getAttrSelectedData(bugArffData,filteredData);
-        List<Double> res=new ArrayList<>();
-        for (int i = 0; i < numAttribute; i++) {
-            res.add(
-                classifiers.get(i).classifyInstance(attrSelectedData.get(i))
-            );
-        }
-
-        return res;
     }
 
     /**

@@ -1,5 +1,6 @@
 package fr.inria.astor.core.loop;
 
+import java.io.PrintWriter;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.sun.glass.ui.Size;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -155,7 +157,38 @@ public abstract class AstorCoreEngine {
 			log.info(getSolutionData(solutions, generationsExecuted));
 
 		}
+	}
 
+	public void showResults(PrintWriter pw) {
+		log.info("\n----SUMMARY_EXECUTION---");
+		if (!this.solutions.isEmpty()) {
+			pw.write("true,");
+			log.debug("End Repair Loops: Found solution");
+			log.debug("Solution stored at: " + projectFacade.getProperties().getWorkingDirForSource());
+
+		} else {
+			pw.write("false,_,_\n");
+			log.debug("End Repair Loops: NOT Found solution");
+		}
+		log.debug("\nNumber solutions:" + this.solutions.size());
+		for (int i=0;i<this.solutions.size();i++) {
+			pw.write(String.valueOf(solutions.get(i).getId()));
+			if(i!=solutions.size()-1)
+				pw.write("-");
+			log.debug("f (sol): " + variants.get(i).getFitness() + ", " + variants.get(i));
+		}
+		log.debug("\nAll variants:");
+		for (ProgramVariant variant : variants) {
+			log.debug("f " + variant.getFitness() + ", " + variant);
+		}
+
+		if (!solutions.isEmpty()) {
+			pw.write(","+TimeUtil.getDateDiff(this.dateInitEvolution, solutions.get(0).getBornDate(), TimeUnit.SECONDS));
+			pw.write("\n");
+			log.info("\nSolution details");
+			log.info(getSolutionData(solutions, generationsExecuted));
+
+		}
 	}
 
 	/**
@@ -361,8 +394,6 @@ public abstract class AstorCoreEngine {
 	/**
 	 * 
 	 * Compiles and validates a created variant.
-	 * 
-	 * @param parentVariant
 	 * @param generation
 	 * @return true if the variant is a solution. False otherwise.
 	 * @throws Exception
@@ -429,7 +460,6 @@ public abstract class AstorCoreEngine {
 	 * 
 	 * @param parentVariant
 	 * @param generation
-	 * @param idsChild
 	 * @return
 	 * @throws Exception
 	 */
@@ -612,7 +642,7 @@ public abstract class AstorCoreEngine {
 	/**
 	 * 
 	 * @param variant
-	 * @param modificationPoints
+
 	 * @return
 	 */
 	protected List<ModificationPoint> getGenList(ProgramVariant variant) {
@@ -695,16 +725,12 @@ public abstract class AstorCoreEngine {
 	 * GenOperationInstance
 	 * 
 	 * @param variant
-	 * @param operationofGen
 	 */
 	protected abstract void updateVariantGenList(ProgramVariant variant, ModificationInstance operation);
 
 	/**
 	 * Create a Gen Mutation for a given CtElement
-	 * 
-	 * @param ctElementPointed
-	 * @param className
-	 * @param suspValue
+	 *
 	 * @return
 	 * @throws IllegalAccessException
 	 */

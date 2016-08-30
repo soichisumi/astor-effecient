@@ -24,8 +24,8 @@ import java.util.Map;
  */
 public class ExactIngredientStrategy extends UniformEfficientIngredientSearch {
 
-    public ExactIngredientStrategy(IngredientSpace space,String reposPath,String bugRevisionId) throws Exception{
-        super(space,reposPath,bugRevisionId);
+    public ExactIngredientStrategy(IngredientSpace space) throws Exception{
+        super(space);
     }
 
     protected Logger log = Logger.getLogger(this.getClass().getName());

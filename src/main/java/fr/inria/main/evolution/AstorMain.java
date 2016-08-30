@@ -242,8 +242,7 @@ public class AstorMain extends AbstractMain {
 		}
 		else if(strategy.equals("exact")){
 			System.out.println("use proposition strategy");
-			st=new ExactIngredientStrategy(ingredientspace,ConfigurationProperties.properties.getProperty("reposPath"),
-					ConfigurationProperties.properties.getProperty("bugRevisionId"));
+			st=new ExactIngredientStrategy(ingredientspace);
 		}
 		else{
 			st = loadCustomIngredientStrategy(strategy, ingredientspace);
@@ -267,7 +266,7 @@ public class AstorMain extends AbstractMain {
 	}
 	
 	private OperatorSelectionStrategy createOperationSelectionStrategy(String opSelectionStrategyClassName, OperatorSpace space) throws Exception{
-			Object object = null;
+		Object object = null;
 		try {
 			Class classDefinition = Class.forName(opSelectionStrategyClassName);
 			object = classDefinition.getConstructor(OperatorSpace.class).newInstance(space);

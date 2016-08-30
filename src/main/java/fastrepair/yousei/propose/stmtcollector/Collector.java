@@ -2,7 +2,7 @@ package fastrepair.yousei.propose.stmtcollector;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
+
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -30,7 +30,7 @@ public class Collector {
             ASTParser parser = ASTParser.newParser(AST.JLS8);
             String content = new String(Files.readAllBytes(target));
             parser.setSource(content.toCharArray());
-            CompilationUnit unit = (CompilationUnit)parser.createAST(new NullProgressMonitor());
+            CompilationUnit unit = (CompilationUnit)parser.createAST(null);
             AstCollectorVisitor visitor = new AstCollectorVisitor(target.toFile().toString(), unit);
             unit.accept(visitor);//CompilationUnitでなくても
             for (Map.Entry<AstVector, AstLocation> a : visitor.asts.entries()) {

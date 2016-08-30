@@ -2,6 +2,7 @@ package fastrepair.yousei.propose;
 
 import fastrepair.yousei.GeneralUtil;
 import fastrepair.yousei.experiment.ChangeAnalyzer;
+import fr.inria.astor.core.setup.ConfigurationProperties;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.ObjectId;
@@ -12,6 +13,9 @@ import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
+import sun.security.jca.GetInstance;
+import weka.classifiers.lazy.IBk;
+import weka.core.Instances;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,49 +24,83 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static fastrepair.yousei.GeneralUtil.getInstances;
+
 /**
  * Created by s-sumi on 16/07/25.
  */
-public class ChangeSizePredictor {
+public class ChangeSizePredictorSingleton {
     private String bugRevisionId;
-    private String bugSource;
     private Repository repository;
 
     private List<List<Integer>> preVectors = new ArrayList<>();
     private List<List<Integer>> postVectors = new ArrayList<>();
     public int[] changeSizeNum=new int[GeneralUtil.SMALLTHRESHOLD+1];
 
-    public ChangeSizePredictor(String bugRevisionId, String bugSource, Repository repository) {
-        this.bugRevisionId = bugRevisionId;
-        this.bugSource = bugSource;
+    private Instances learningData=null;
+    private IBk ibk=null;
+
+    private static ChangeSizePredictorSingleton instance=null;
+
+    public static ChangeSizePredictorSingleton getInstance(Repository repository){
+        if(instance==null){
+            instance=new ChangeSizePredictorSingleton(repository);
+        }
+        return instance;
+    }
+    public boolean nextChangeSizeIsSmall(String bugSource){
+        int res;
+        try {
+            File bugSourceArff = Util.createSourceArff4SizePrediction(bugSource);
+            Instances bugData=getInstances(bugSourceArff);
+            bugData=Util.makeSameAttrData(learningData,bugData);
+            res = Math.round((long)ibk.classifyInstance(bugData.instance(0)));//ex: 13.999 ->14 , 12.11->12
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.toString());
+        }
+        return res==1;  //1..small 0...big
+    }
+
+    private ChangeSizePredictorSingleton(Repository repository){
+        this.bugRevisionId = ConfigurationProperties.properties.getProperty("bugRevisionId");
         this.repository = repository;
         Arrays.fill(changeSizeNum,0);
-    }
+        try {
+            RevWalk rw = GeneralUtil.getInitializedRevWalk(repository, RevSort.REVERSE);
+            RevCommit commit = rw.next();
+            commit = rw.next();
 
-    /**
-     * assume arff like (attr,attr.....(only one vector) , big or small)
-     * @return return true if next change is big
-     */
-    public boolean nextChangeIsBig() throws Exception{
-        RevWalk rw = GeneralUtil.getInitializedRevWalk(repository, RevSort.REVERSE);
-        RevCommit commit = rw.next();
-        commit = rw.next();
+            while (commit != null) {
+                if (commit.getParentCount() >= 1)
+                    updateGenealogy(commit, ".java");
 
-        while (commit != null) {
-            if (commit.getParentCount() >= 1 )
-                updateGenealogy(commit, ".java");
+                if (GeneralUtil.isTargetRevision(this.bugRevisionId, commit)) {   //use history up to the given bug
+                    break;
+                }
 
-            if(GeneralUtil.isTargetRevision(this.bugRevisionId,commit)) {   //use history up to the given bug
-                break;
+                commit = rw.next();
             }
 
-            commit = rw.next();
+            updateChangeSizes(this.preVectors, this.postVectors);
+            printChangeSizes();
+
+            File learningDataArff = Util.genealogy2Arff4SizePrediction(this.preVectors, this.postVectors); //
+
+            this.learningData=getInstances(learningDataArff);
+            learningData.setClassIndex(learningData.numAttributes()-1);  //index starts with 0
+            learningData = GeneralUtil.useFilter(learningData);
+
+            //in Murakami's thesis: we use k=1 because k=1 can produce results in the shortest time
+            this.ibk=new IBk();
+            ibk.setOptions("-K 1".split(" "));
+            ibk.buildClassifier(learningData);
+
+        }catch (Exception e){
+            throw new RuntimeException();
         }
-        updateChangeSizes(this.preVectors,this.postVectors);
-        File learningDataArff=Util.genealogy2Arff4SizePrediction(this.preVectors,this.postVectors); //
-        File bugSourceArff=Util.createSourceArff4SizePrediction(this.bugSource);
-        return Util.predictSizeObNextChange(learningDataArff,bugSourceArff);
     }
+
     public void printChangeSizes(){
         System.out.println();
         System.out.println("ChangeSizes are:");

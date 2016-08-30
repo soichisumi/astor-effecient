@@ -5,7 +5,6 @@ import org.eclipse.cdt.core.dom.ast.gnu.c.GCCLanguage;
 import org.eclipse.cdt.core.index.IIndex;
 import org.eclipse.cdt.core.model.ILanguage;
 import org.eclipse.cdt.core.parser.*;
-import org.eclipse.core.runtime.CoreException;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -28,7 +27,7 @@ public class CppSourceAnalyzer {
 		this.classPath = classPath;
 		this.outputPath = outputPath;
 	}
-	public Map<String, Integer> analyzeFile() throws IOException,CoreException{
+	public Map<String, Integer> analyzeFile() throws Exception{
 		StringBuilder source = new StringBuilder();
 		try(FileReader fr = new FileReader(filePath)) {
 			int c;
@@ -37,7 +36,7 @@ public class CppSourceAnalyzer {
 			}
 		}
 
-		ILanguage language = GCCLanguage.getDefault();
+		ILanguage language = null;/*GCCLanguage.getDefault();*/
 
 		FileContent reader = FileContent.create(filePath, source.toString().toCharArray());
 

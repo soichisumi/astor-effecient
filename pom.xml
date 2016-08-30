@@ -42,11 +42,11 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.eclipse.jdt/org.eclipse.jdt.core -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>3.10.0</version>
-		</dependency>
+		</dependency>-->
 
 		<!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/LibSVM -->
 		<!--<dependency>
@@ -54,6 +54,12 @@
 			<artifactId>LibSVM</artifactId>
 			<version>1.0.8</version>
 		</dependency>-->
+
+		<dependency>
+			<groupId>org.eclipse.core</groupId>
+			<artifactId>org.eclipse.core.resources</artifactId>
+			<version>3.7.100</version>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
 		<dependency>
@@ -133,6 +139,22 @@
 			<groupId>fr.spoonlab</groupId>
 			<version>0.0.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>fastastor-cdt</groupId>
+			<artifactId>fastastor-cdt</artifactId>
+			<version>1</version>
+		</dependency>
+		<dependency>
+			<groupId>fastastor-eclipsecore</groupId>
+			<artifactId>fastastor-eclipsecore</artifactId>
+			<version>1</version>
+		</dependency>
+		<dependency>
+			<groupId>fastastor-weka</groupId>
+			<artifactId>fastastor-weka</artifactId>
+			<version>1</version>
+		</dependency>
 	</dependencies>
 
 	<repositories>
@@ -157,6 +179,22 @@
 			<id>EvoSuite</id>
 			<name>EvoSuite Repository</name>
 			<url>http://www.evosuite.org/m2</url>
+		</repository>
+
+		<repository>
+			<id>fastastor-cdt</id>
+			<name>fastastor-cdt</name>
+			<url>file://${project.basedir}/libs</url>
+		</repository>
+		<repository>
+			<id>fastastor-eclipsecore</id>
+			<name>fastastor-eclipsecore</name>
+			<url>file://${project.basedir}/libs</url>
+		</repository>
+		<repository>
+			<id>fastastor-weka</id>
+			<name>fastastor-weka</name>
+			<url>file://${project.basedir}/libs</url>
 		</repository>
 
 	</repositories>

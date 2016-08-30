@@ -1,13 +1,11 @@
 package fastrepair.yousei.util;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +25,7 @@ public class JavaSourceAnalyzer {
         this.classPath = classPath;
         this.outputPath = outputPath;
     }
-    public List<Integer> analyzeFile() throws IOException,CoreException {
+    public List<Integer> analyzeFile() throws Exception{
         /*StringBuilder source = new StringBuilder(); //なんかOutObBounds出たぞ
         try(FileReader fr = new FileReader(filePath)) {
             int c;
@@ -45,7 +43,7 @@ public class JavaSourceAnalyzer {
         ASTParser parser = ASTParser.newParser(AST.JLS4);
         parser.setSource(source.toString().toCharArray());
         CompilationUnit unit = (CompilationUnit) parser
-                .createAST(new org.eclipse.core.runtime.NullProgressMonitor());
+                .createAST(null);
 
         JavaSourceVisitor visitor = new JavaSourceVisitor();
         unit.accept(visitor);
