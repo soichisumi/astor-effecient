@@ -122,6 +122,52 @@ public class Util {
 
         return statements;
     }
+    public static Set<AstLocation> getASTLocationsDisted(String source, AstVector vector, SourcePosition sp,int dist) throws Exception{   //boolean packageと、そのパース結果を追加
+        Multimap<AstVector, AstLocation> result = MultimapBuilder.hashKeys().arrayListValues().build();//ソースコードの文とその場所の集合
+        ASTParser parser = ASTParser.newParser(AST.JLS8);
+
+        parser.setSource(source.toCharArray());
+        CompilationUnit unit = (CompilationUnit)parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
+        AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
+        unit.accept(visitor); if(unit.getProblems().length>0) System.out.println("Conpilation problem occured");
+        for (Map.Entry<AstVector, AstLocation> a : visitor.asts.entries()) {
+            result.put(a.getKey(), a.getValue());
+        }
+        int[] res = new int[92];
+        {
+            List<Map.Entry<AstVector, AstLocation>> vectors = new ArrayList<>();//replaceする文とおなじ行の文のリスト(複数存在する可能性がある)
+            if (sp != null)
+                visitor.asts.entries().forEach((e) -> {
+                    if (sameLine(e.getValue(), sp))
+                        vectors.add(e);
+                });
+
+            if(vectors.size()==0){
+                System.out.println("perhaps couldn't parse source code."); return null;
+            }
+
+            vectors.sort((a, b) -> statementPlausibility(a.getValue(), sp) - statementPlausibility(b.getValue(), sp));//入れ替える文と思われる文を探すためにソート
+
+            List<Integer> original = GeneralUtil.getSourceVector4Java(source, ".java");
+            int[] predicted = vector.getArray();/*ArrayUtils.toPrimitive(original.toArray(new Integer[original.size()]));*/
+            int[] replaced = vectors.get(0).getKey().getArray();
+
+
+            for (int i = 0; i < vector.getArray().length; i++) {
+                res[i] =/*predicted[i]-original.get(i)+*/replaced[i];
+                if (res[i] < 0)
+                    res[i] = 0;
+            }
+        }
+        //printVectors(original,predicted,replaced,res);  //finally is equal to replaced when original is equal to predicted
+
+        Set<AstLocation> statements=new HashSet<>();
+        //statements.addAll(result.get(new AstVector(res)));
+        statements.addAll(getSimilarStatements(visitor.asts,res,dist));
+        //getSimilarStatements()
+
+        return statements;
+    }
     public static boolean containStatementWhich(List<AstLocation> statements, int startLine, int endLine){
         boolean flag=false;
         for(int i=0;i<statements.size();i++){

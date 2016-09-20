@@ -13,6 +13,7 @@ import fr.inria.astor.core.loop.spaces.operators.AstorOperator;
  */
 public abstract class AstorCtSearchStrategy extends IngredientSearchStrategy {
 
+
 	public AstorCtSearchStrategy(IngredientSpace space) {
 		super(space);
 	}

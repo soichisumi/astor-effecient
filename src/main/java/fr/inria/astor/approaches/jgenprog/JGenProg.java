@@ -235,6 +235,7 @@ public class JGenProg extends AstorCoreEngine {
 		if (fix != null) {
 			operation.setModified(fix.getCode());
 			operation.setIngredientScope(fix.getScope());
+			operation.isRecommendedStmt=this.ingredientSearchStrategy.isRecommendedStmt;
 		}
 		return operation;
 	}

@@ -85,6 +85,7 @@ public class ChangeSizePredictorSingleton {
             updateChangeSizes(this.preVectors, this.postVectors);
             printChangeSizes();
 
+
             File learningDataArff = Util.genealogy2Arff4SizePrediction(this.preVectors, this.postVectors); //
 
             this.learningData=getInstances(learningDataArff);

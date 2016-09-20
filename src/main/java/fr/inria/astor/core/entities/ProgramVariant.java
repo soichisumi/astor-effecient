@@ -25,9 +25,9 @@ import spoon.reflect.declaration.CtType;
  *
  */
 public class ProgramVariant {
-	
 
 	public static String DEFAULT_ORIGINAL_VARIANT = "default";
+	public boolean lastStmtIsRecommendedStmt=false;
 
 	/**
 	 * Variand ID
@@ -133,6 +133,7 @@ public class ProgramVariant {
 			operations.put(generation, modificationPoints);
 		}
 		modificationPoints.add(op);
+		this.lastStmtIsRecommendedStmt=op.isRecommendedStmt;
 		
 	}
 	public Map<Integer, List<ModificationInstance>> getOperations() {

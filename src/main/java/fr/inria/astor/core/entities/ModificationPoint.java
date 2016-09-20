@@ -20,7 +20,9 @@ public class ModificationPoint {
 	protected CtElement codeElement;
 
 	protected CtClass ctClass;
-	
+
+	public boolean usedRecommendedStmt=false;
+
 	List<CtVariable> contextOfModificationPoint;
 
 	public int identified = 0;

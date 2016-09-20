@@ -12,7 +12,7 @@ import fr.inria.astor.core.loop.spaces.operators.AstorOperator;
  *
  */
 public abstract class IngredientSearchStrategy {
-
+	public boolean isRecommendedStmt=false;
 	protected IngredientSpace ingredientSpace = null;
 
 	/**

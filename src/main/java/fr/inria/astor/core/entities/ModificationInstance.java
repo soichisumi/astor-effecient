@@ -18,7 +18,7 @@ import spoon.reflect.declaration.CtElement;
 public class ModificationInstance {
 	
 	protected Logger log = Logger.getLogger(ModificationInstance.class.getName());
-
+	public boolean isRecommendedStmt=false;
 	/**
 	 * Gen where the operation is applied
 	 */

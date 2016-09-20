@@ -89,9 +89,10 @@ public class StatementRecommender {
                         locations = getASTLocationsFromPackage(Util.toAstVector(resInt), location);
                         break;
                     case "global":
+                        locations=getASTLocationsFromGlobal(Util.toAstVector(resInt),location);
                         break;
                     default:
-                        throw new RuntimeException("scope property accepts only local, package and global!");
+                        throw new RuntimeException("scope property only accepts local, package and global");
                 }
                 System.out.println("prediction done");
                 System.out.println("prediction size is: " + locations.size());
@@ -105,6 +106,51 @@ public class StatementRecommender {
         }
         return null;
     }
+
+    public Set<AstLocation> getStatementsDistend(String bugSourceCode, ModificationPoint location, int dist) {
+
+        System.out.println("process " + reposPath);
+
+        System.out.println("predict the size of next change");
+        ChangeSizePredictorSingleton csp = ChangeSizePredictorSingleton.getInstance(this.repository);
+        try {
+            if (csp.nextChangeSizeIsSmall(bugSourceCode)) {
+                System.out.println("OK. next change is small\n");
+
+                System.out.println("predict next source");
+                SourceVectorPredictorSingleton svp = SourceVectorPredictorSingleton.getInstance(this.repository);
+                List<Double> resDouble = svp.getNextVector(bugSourceCode);
+                List<Integer> resInt = resDouble.stream().map(d -> (int) Math.round(d)).collect(Collectors.toList());/*
+                Set<AstLocation> locations = "local".equals(ConfigurationProperties.getProperty("scope")) ?
+                        Util.getASTLocations(bugSourceCode, Util.toAstVector(resInt), location.getCodeElement().getPosition()) :
+                        getASTLocationsFromPackage(Util.toAstVector(resInt), location);//予測結果-元の状態ベクトル+変更箇所の状態ベクトルをもつ文の集合を返す.文の定義はFastAstor側*/
+                Set<AstLocation> locations = null;
+                switch (ConfigurationProperties.getProperty("scope")) {
+                    case "local":
+                        locations = Util.getASTLocationsDisted(bugSourceCode, Util.toAstVector(resInt), location.getCodeElement().getPosition(),dist);
+                        break;
+                    case "package":
+                        locations = getASTLocationsFromPackage(Util.toAstVector(resInt), location);
+                        break;
+                    case "global":
+                        locations=getASTLocationsFromGlobal(Util.toAstVector(resInt),location);
+                        break;
+                    default:
+                        throw new RuntimeException("scope property only accepts local, package and global");
+                }
+                System.out.println("prediction done");
+                System.out.println("prediction size is: " + locations.size());
+                return locations;
+
+            } else {
+                System.out.println("next change is Big. conduct ASTOR default search");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     /**
      * 予測結果 - 元の状態ベクトル + 変更箇所の状態ベクトルをもつ文の集合を返す
