@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import fastrepair.yousei.GeneralUtil;
 import fastrepair.yousei.propose.Util;
+import fr.inria.astor.core.setup.ConfigurationProperties;
 import org.junit.Test;
 import spoon.reflect.declaration.CtElement;
 import spoon.support.reflect.declaration.CtAnnotationImpl;
@@ -15,8 +16,13 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by s-sumi on 16/07/30.
@@ -57,8 +63,18 @@ public class FastRepairTests {
             assertTrue(Util4Tests.hasSameAttributes(filteredData.get(i).instance(0),
                                                     attrSelectedData.get(i)));
         }
-
-
+    }
+    @Test
+    public void pathsTest00() throws Exception{
+        List<Path> hoge;
+        try {
+            hoge = Files.walk(Paths.get("/home/s-sumi/Desktop/fast-astor/src/test"))
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.endsWith(".txt"))
+                    .collect(Collectors.toList());
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 }
 

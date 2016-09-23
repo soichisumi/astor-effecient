@@ -261,6 +261,8 @@ public abstract class AstorCoreEngine {
             //pyo.write("Solution details:\n");
             pyo.write(getSolutionData3(solutions, generationsExecuted));
 
+        }else{
+            pyo.write("solution not found\n");
         }
     }
 

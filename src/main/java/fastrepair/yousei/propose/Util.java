@@ -68,6 +68,33 @@ public class Util {
 //        }
 //        return sb.toString();
     }
+    public static String getSourceCodeFromQualifiedName(String qualifiedName){
+        List<Path> filesinFolder=null;
+        try {
+            filesinFolder = Files.walk(Paths.get(ConfigurationProperties.properties.getProperty("location")))
+                    .filter(Files::isRegularFile)
+                    .filter(p->p.endsWith(qualifiedName.replace(".","/")+".java"))
+                    .collect(Collectors.toList());
+        }catch (Exception e){
+            e.printStackTrace();
+            return "";
+        }
+        if (filesinFolder.size()!=1)
+            System.out.println("there is some same file");
+
+        try {
+            return new String(Files.readAllBytes(filesinFolder.get(0)));
+        } catch (IOException e) {
+            throw new RuntimeException("exception");
+        }
+//        StringBuilder sb=new StringBuilder();
+//        try(Stream<String> stream=Files.lines(filesinFolder.get(0))){
+//            stream.forEach(sb::append);
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }
+//        return sb.toString();
+    }
 
     /**
      * 予測結果 - 元の状態ベクトル + 変更箇所の状態ベクトルをもつ文の集合を返す

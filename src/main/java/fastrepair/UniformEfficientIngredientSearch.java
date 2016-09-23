@@ -281,7 +281,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     }*/
     //Sorted!!!!!!
     protected CtCodeElement getNextElementFromSpace(ModificationPoint location, AstorOperator operationType) {
-        CtCodeElement originalPicked = getNextStatementFromSpaceSortedAndSameFirst(location, operationType, "package".equals(ConfigurationProperties.properties.getProperty("scope")));
+        CtCodeElement originalPicked = getNextStatementFromSpaceSorted(location, operationType, "package".equals(ConfigurationProperties.properties.getProperty("scope")));
         CtCodeElement cloned = MutationSupporter.clone(originalPicked);
         return cloned;
     }
@@ -290,7 +290,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
         List<CtCodeElement> elements = this.ingredientSpace.getIngredients(location.getCodeElement(), type);
         if (elements == null)
             return null;
-        return getNextStatementFromSpaceSortedAndSameFirst(location, operationType, "package".equals(ConfigurationProperties.properties.getProperty("scope")));
+        return getNextStatementFromSpaceSorted(location, operationType, "package".equals(ConfigurationProperties.properties.getProperty("scope")));
     }
 
     @Override   //実際はこれを使っている

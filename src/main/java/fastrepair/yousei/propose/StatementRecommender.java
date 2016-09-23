@@ -130,10 +130,10 @@ public class StatementRecommender {
                         locations = Util.getASTLocationsDisted(bugSourceCode, Util.toAstVector(resInt), location.getCodeElement().getPosition(),dist);
                         break;
                     case "package":
-                        locations = getASTLocationsFromPackage(Util.toAstVector(resInt), location);
+                        locations = getASTLocationsFromPackageDistened(Util.toAstVector(resInt), location,dist);
                         break;
                     case "global":
-                        locations=getASTLocationsFromGlobal(Util.toAstVector(resInt),location);
+                        locations=getASTLocationsFromGlobalDistend(Util.toAstVector(resInt),location,dist);
                         break;
                     default:
                         throw new RuntimeException("scope property only accepts local, package and global");
@@ -197,7 +197,54 @@ public class StatementRecommender {
         for (CtType c : affected) {
             CtPackage p = c.getParent(CtPackage.class);
             for (Map.Entry<AstVector, AstLocation> e : this.ingredients.get(p.toString()).entries()) {
-                if (getDistance(e.getKey(), res) <= 5) {
+                if (getDistance(e.getKey(), res) <= 3) {
+                    statements.add(e.getValue());
+                }
+            }
+        }
+
+        return statements;
+    }
+    public Set<AstLocation> getASTLocationsFromPackageDistened(AstVector vector, ModificationPoint location,int dist) throws Exception {   //boolean packageと、そのパース結果を追加
+        List<CtType<?>> affected = location.getProgramVariant().getAffectedClasses();
+        Set<String> packages = new HashSet<>(); //K:package V:statementの情報の集合
+        for (CtType<?> ing : affected) {
+
+            CtPackage p = ing.getParent(CtPackage.class);
+            packages.add(p.toString());
+            if (this.ingredients.containsKey(p.toString()))
+                continue;
+
+            this.ingredients.put(p.toString(), MultimapBuilder.hashKeys().arrayListValues().build());
+            for (CtType<?> t : p.getTypes()) {
+                String source = Util.getSourceCodeFromClassName(t.getSimpleName());
+                ASTParser parser = ASTParser.newParser(AST.JLS8);
+                parser.setSource(source.toCharArray());
+                org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
+                AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
+                unit.accept(visitor);
+                if (unit.getProblems().length > 0) System.out.println("compilation problem occurred");
+
+                Multimap<AstVector,AstLocation> m = ingredients.get(p.toString());
+                for (Map.Entry<AstVector, AstLocation> a : visitor.asts.entries()) {
+                    m.put(a.getKey(), a.getValue());
+                }
+            }
+        }
+
+        String source = Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName());
+        ASTParser parser = ASTParser.newParser(AST.JLS8);
+        parser.setSource(Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName()).toCharArray());
+        org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
+        AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
+        unit.accept(visitor);
+        int[] res = getNextAstVector(vector, location, source, visitor);
+
+        Set<AstLocation> statements = new HashSet<>();
+        for (CtType c : affected) {
+            CtPackage p = c.getParent(CtPackage.class);
+            for (Map.Entry<AstVector, AstLocation> e : this.ingredients.get(p.toString()).entries()) {
+                if (getDistance(e.getKey(), res) == dist) {
                     statements.add(e.getValue());
                 }
             }
@@ -218,7 +265,25 @@ public class StatementRecommender {
 
         Set<AstLocation> statements = new HashSet<>();
         for (Map.Entry<AstVector, AstLocation> e : this.globalIngredients.entries()) {
-            if (getDistance(e.getKey(), res) <= 5) {
+            if (getDistance(e.getKey(), res) <= 3) {
+                statements.add(e.getValue());
+            }
+        }
+
+        return statements;
+    }
+    public Set<AstLocation> getASTLocationsFromGlobalDistend(AstVector vector, ModificationPoint location,int dist) throws Exception {   //boolean packageと、そのパース結果を追加
+        String source = Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName());
+        ASTParser parser = ASTParser.newParser(AST.JLS8);
+        parser.setSource(Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName()).toCharArray());
+        org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
+        AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
+        unit.accept(visitor);
+        int[] res = getNextAstVector(vector, location, source, visitor);
+
+        Set<AstLocation> statements = new HashSet<>();
+        for (Map.Entry<AstVector, AstLocation> e : this.globalIngredients.entries()) {
+            if (getDistance(e.getKey(), res) == dist) {
                 statements.add(e.getValue());
             }
         }
