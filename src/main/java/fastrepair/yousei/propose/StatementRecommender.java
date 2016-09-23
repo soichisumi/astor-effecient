@@ -170,7 +170,7 @@ public class StatementRecommender {
 
             this.ingredients.put(p.toString(), MultimapBuilder.hashKeys().arrayListValues().build());
             for (CtType<?> t : p.getTypes()) {
-                String source = Util.getSourceCodeFromClassName(t.getSimpleName());
+                String source = Util.getSourceCodeFromQualifiedName(t.getQualifiedName());
                 ASTParser parser = ASTParser.newParser(AST.JLS8);
                 parser.setSource(source.toCharArray());
                 org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
@@ -185,9 +185,9 @@ public class StatementRecommender {
             }
         }
 
-        String source = Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName());
+        String source = Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName());
         ASTParser parser = ASTParser.newParser(AST.JLS8);
-        parser.setSource(Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName()).toCharArray());
+        parser.setSource(Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName()).toCharArray());
         org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
         AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
         unit.accept(visitor);
@@ -217,7 +217,7 @@ public class StatementRecommender {
 
             this.ingredients.put(p.toString(), MultimapBuilder.hashKeys().arrayListValues().build());
             for (CtType<?> t : p.getTypes()) {
-                String source = Util.getSourceCodeFromClassName(t.getSimpleName());
+                String source = Util.getSourceCodeFromQualifiedName(t.getQualifiedName());
                 ASTParser parser = ASTParser.newParser(AST.JLS8);
                 parser.setSource(source.toCharArray());
                 org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
@@ -232,9 +232,9 @@ public class StatementRecommender {
             }
         }
 
-        String source = Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName());
+        String source = Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName());
         ASTParser parser = ASTParser.newParser(AST.JLS8);
-        parser.setSource(Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName()).toCharArray());
+        parser.setSource(Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName()).toCharArray());
         org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
         AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
         unit.accept(visitor);
@@ -255,9 +255,9 @@ public class StatementRecommender {
 
 
     public Set<AstLocation> getASTLocationsFromGlobal(AstVector vector, ModificationPoint location) throws Exception {   //boolean packageと、そのパース結果を追加
-        String source = Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName());
+        String source = Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName());
         ASTParser parser = ASTParser.newParser(AST.JLS8);
-        parser.setSource(Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName()).toCharArray());
+        parser.setSource(Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName()).toCharArray());
         org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
         AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
         unit.accept(visitor);
@@ -273,9 +273,9 @@ public class StatementRecommender {
         return statements;
     }
     public Set<AstLocation> getASTLocationsFromGlobalDistend(AstVector vector, ModificationPoint location,int dist) throws Exception {   //boolean packageと、そのパース結果を追加
-        String source = Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName());
+        String source = Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName());
         ASTParser parser = ASTParser.newParser(AST.JLS8);
-        parser.setSource(Util.getSourceCodeFromClassName(location.getCtClass().getSimpleName()).toCharArray());
+        parser.setSource(Util.getSourceCodeFromQualifiedName(location.getCtClass().getQualifiedName()).toCharArray());
         org.eclipse.jdt.core.dom.CompilationUnit unit = (org.eclipse.jdt.core.dom.CompilationUnit) parser.createAST(null);/*example ではnew NullProgressMonitor(). jdt.core3.10にしかない*/
         AstCollectorVisitor visitor = new AstCollectorVisitor(source, unit);
         unit.accept(visitor);

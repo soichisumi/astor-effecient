@@ -49,10 +49,10 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpace(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
 
-        String modifyClassName = location.getCtClass().getSimpleName();
+        String modifyClassName = location.getCtClass().getQualifiedName();
         System.out.println("predict for: " + modifyClassName);
 
-        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromClassName(modifyClassName), location);
+        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromQualifiedName(modifyClassName), location);
         System.out.println("get ingredient from fixspace....");
         System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
         int res = locations == null ?
@@ -81,10 +81,10 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpaceSameFirst(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
         fixSpace=sortFixSpace(fixSpace);
-        String modifyClassName = location.getCtClass().getSimpleName();
+        String modifyClassName = location.getCtClass().getQualifiedName();
         System.out.println("predict for: " + modifyClassName);
 
-        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromClassName(modifyClassName), location);
+        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromQualifiedName(modifyClassName), location);
         System.out.println("get ingredient from fixspace....");
         System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
         int res = locations == null ?
@@ -123,11 +123,11 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpaceSorted(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
 
-        String modifyClassName = location.getCtClass().getSimpleName();
+        String modifyClassName = location.getCtClass().getQualifiedName();
         System.out.println("predict for: " + modifyClassName);
         int res=0;
         for (int dist = 0; dist < 4; dist++) {
-            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromClassName(modifyClassName), location,dist);
+            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromQualifiedName(modifyClassName), location,dist);
             System.out.println("get ingredient from fixspace....");
             System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
             res = locations == null ?
@@ -158,11 +158,11 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpaceSortedAndSameFirst(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
         fixSpace=sortFixSpace(fixSpace);
-        String modifyClassName = location.getCtClass().getSimpleName();
+        String modifyClassName = location.getCtClass().getQualifiedName();
         System.out.println("predict for: " + modifyClassName);
         int res=0;
         for (int dist = 0; dist < 4; dist++) {
-            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromClassName(modifyClassName), location,dist);
+            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromQualifiedName(modifyClassName), location,dist);
             System.out.println("get ingredient from fixspace....");
             System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
             res = locations == null ?
