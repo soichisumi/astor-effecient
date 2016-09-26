@@ -144,7 +144,7 @@ public class Util {
 
         Set<AstLocation> statements=new HashSet<>();
         //statements.addAll(result.get(new AstVector(res)));
-        statements.addAll(getSimilarStatementsWithThreshold(visitor.asts,res,3));
+        statements.addAll(getSimilarStatementsWithThreshold(visitor.asts,res,4));
         //getSimilarStatements()
 
         return statements;
