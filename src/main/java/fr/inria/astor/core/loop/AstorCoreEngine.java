@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import com.sun.deploy.uitoolkit.impl.awt.AWTAppletAdapter;
 import com.sun.glass.ui.Size;
 import com.sun.org.apache.xml.internal.serialize.LineSeparator;
+import fr.inria.astor.core.setup.RandomManager;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -552,6 +553,8 @@ public abstract class AstorCoreEngine {
      * @throws Exception
      */
     protected ProgramVariant createNewProgramVariant(ProgramVariant parentVariant, int generation) throws Exception {
+
+
         // This is the copy of the original program
         ProgramVariant childVariant = variantFactory.createProgramVariantFromAnother(parentVariant, generation);
         log.debug("\n--Child created id: " + childVariant.getId());
@@ -1053,8 +1056,9 @@ public abstract class AstorCoreEngine {
     public String getSolutionData3(List<ProgramVariant> variants, int generation) {
         String line = "";
         for (ProgramVariant solutionVariant : variants) {
-            line += solutionVariant.getId() + "," + TimeUtil.getDateDiff(this.dateInitEvolution, solutionVariant.getBornDate(), TimeUnit.SECONDS)+LineSeparator.Unix; //id,time
+            line += solutionVariant.getId() + "," + TimeUtil.getDateDiff(this.dateInitEvolution, solutionVariant.getBornDate(), TimeUnit.SECONDS); //id,time
         }
+        line+=","+ RandomManager.opeCounter+","+RandomManager.ingCounter+","+RandomManager.mutCounter+LineSeparator.Unix;
         return line;
     }
 

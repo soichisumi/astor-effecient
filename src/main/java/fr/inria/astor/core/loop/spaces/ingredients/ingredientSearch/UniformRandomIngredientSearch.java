@@ -39,7 +39,7 @@ public class UniformRandomIngredientSearch extends AstorCtSearchStrategy {
 	 */
 	protected CtCodeElement getRandomStatementFromSpace(List<CtCodeElement> fixSpace) {	// maybe here
 		int size = fixSpace.size();
-		int index = RandomManager.nextInt(size);
+		int index = RandomManager.nextInt4Ingredient(size);
 		return fixSpace.get(index);
 
 	}

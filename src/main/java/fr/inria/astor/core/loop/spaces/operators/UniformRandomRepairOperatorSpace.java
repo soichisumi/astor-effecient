@@ -20,7 +20,7 @@ public class UniformRandomRepairOperatorSpace extends OperatorSelectionStrategy 
 	@Override
 	public AstorOperator getNextOperator() {
 		AstorOperator[] operators = getOperatorSpace().values();
-		return operators[RandomManager.nextInt(operators.length)];
+		return operators[RandomManager.nextInt4Operaion(operators.length)];
 	}
 
 	/**
@@ -31,7 +31,7 @@ public class UniformRandomRepairOperatorSpace extends OperatorSelectionStrategy 
 	protected boolean mutateModificationPoint(SuspiciousModificationPoint modificationPoint) {
 
 		if (ConfigurationProperties.getPropertyBool("probagenmutation")) {
-			double randomVal = RandomManager.nextDouble();
+			double randomVal = RandomManager.nextDouble4Operation();
 			double suspiciousValue = modificationPoint.getSuspicious().getSuspiciousValue();
 			return ((suspiciousValue * ConfigurationProperties.getPropertyDouble("mutationrate")) 
 					>= randomVal);
@@ -59,7 +59,7 @@ public class UniformRandomRepairOperatorSpace extends OperatorSelectionStrategy 
 
 	@Deprecated
 	public AstorOperator getNextOperator(double suspiciousValue) {
-		double randomVal = RandomManager.nextDouble();
+		double randomVal = RandomManager.nextDouble4Operation();
 		if (!ConfigurationProperties.getPropertyBool("probagenmutation")
 				|| (suspiciousValue * ConfigurationProperties.getPropertyDouble("mutationrate")) >= randomVal) {
 			return this.getNextOperator();

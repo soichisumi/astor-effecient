@@ -40,6 +40,11 @@ import static fastrepair.yousei.GeneralUtil.*;
 public class Util {
 
     public static int smallchange=0;
+    public static int DIST_THRESHOLD=3; //default 3
+
+    /*public static void dumpRandomTable(){
+        List<Integer>
+    }*/
 
     public static String getSourceCodeFromClassName(String className){
         List<Path> filesinFolder=null;
@@ -144,7 +149,7 @@ public class Util {
 
         Set<AstLocation> statements=new HashSet<>();
         //statements.addAll(result.get(new AstVector(res)));
-        statements.addAll(getSimilarStatementsWithThreshold(visitor.asts,res,4));
+        statements.addAll(getSimilarStatementsWithThreshold(visitor.asts,res,Util.DIST_THRESHOLD));
         //getSimilarStatements()
 
         return statements;
