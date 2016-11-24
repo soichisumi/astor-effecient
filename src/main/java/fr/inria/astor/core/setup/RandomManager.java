@@ -26,6 +26,8 @@ public class RandomManager {
     private static Random randomGenerator4MutationInt = null;
     private static Random randomGenerator4MutationDouble = null;
 
+    private static Integer opeIntTable[]=null;
+
     public static int ingCounter=0;
     public static int opeCounter=0;
     public static int mutCounter=0;
@@ -71,9 +73,19 @@ public class RandomManager {
         return randomGenerator4IngredientDouble.nextDouble();
     }
 
-    public static Integer nextInt4Operaion(int bound) {
+    public static Integer nextInt4Operaion(int bound,int id) {
         opeCounter++;
-        return randomGenerator4OperationInt.nextInt(bound);
+
+        if (opeIntTable==null){
+            opeIntTable=new Integer[10001];
+            for (int i=0;i<10001;i++){
+                opeIntTable[i]=randomGenerator4OperationInt.nextInt(bound);//最初に与えられたｂｏｕｎｄで初期化
+            }
+        }
+
+        return opeIntTable[id];
+
+        //return randomGenerator4OperationInt.nextInt(bound);
     }
 
     public static Double nextDouble4Operation() {

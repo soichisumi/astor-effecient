@@ -21,7 +21,9 @@ public abstract class OperatorSelectionStrategy {
 	 * Returns an Operator
 	 * @return
 	 */
-	public abstract AstorOperator getNextOperator();
+	//public abstract AstorOperator getNextOperator();
+	public abstract AstorOperator getNextOperator(int id);
+	//public abstract AstorOperator getNextOperator2();
 	
 	/**
 	 * Given a modification point, it retrieves an operator to apply to that point.
@@ -29,6 +31,7 @@ public abstract class OperatorSelectionStrategy {
 	 * @return
 	 */
 	public abstract AstorOperator getNextOperator(SuspiciousModificationPoint modificationPoint);
+	//public abstract AstorOperator getNextOperator2(SuspiciousModificationPoint modificationPoint);
 
 	public OperatorSpace getOperatorSpace() {
 		return operatorSpace;

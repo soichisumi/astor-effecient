@@ -137,6 +137,13 @@ public abstract class AstorCoreEngine {
             if(generationsExecuted==1)
                 dateInitEvolution=new Date();
         }
+        log.info("repair end"); log.info("\n");
+        log.info("stop :"+(stop?"true":"false")); log.info("\n");
+        log.info("v-emp :"+(this.variants.isEmpty()?"true":"false")); log.info("\n");
+        log.info("CPp :"+(generationsExecuted<ConfigurationProperties.getPropertyInt("maxGeneration")
+                                               ?"true":"false")); log.info("\n");
+        log.info("belowMaxTime: "+(belowMaxTime(dateInitEvolution,maxMinutes)?"true":"false")); log.info("\n");
+        log.info("limdate: "+(limitDate()?"true":"false")); log.info("\n");
         // At the end
         long startT = dateInitEvolution.getTime();
         long endT = System.currentTimeMillis();

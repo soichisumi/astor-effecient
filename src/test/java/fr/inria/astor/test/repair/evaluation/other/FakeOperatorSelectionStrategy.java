@@ -28,7 +28,8 @@ public class FakeOperatorSelectionStrategy extends OperatorSelectionStrategy {
 	}
 
 	@Override
-	public AstorOperator getNextOperator() {
+	//public AstorOperator getNextOperator(){
+	public AstorOperator getNextOperator(int i) {
 
 		return null;
 	}
