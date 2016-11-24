@@ -60,25 +60,30 @@ public class EfficientIngredientStrategy extends UniformRandomIngredientSearch {
 		int elementsFromFixSpace = getSpaceSize(modificationPoint, operationType);
 
 		while (continueSearching && attempts < elementsFromFixSpace) {
-			Ingredient randomIngredient = super.getFixIngredient(modificationPoint, operationType);
+			Ingredient randomIngredient=null;
+			CtElement elementFromIngredient=null;
+			try {
+				randomIngredient = super.getFixIngredient(modificationPoint, operationType);
 
-			if (randomIngredient == null || randomIngredient.getCode() == null) {
-				return null;
+				if (randomIngredient == null || randomIngredient.getCode() == null) {
+					return null;
+				}
+				elementFromIngredient = randomIngredient.getCode();
+
+				attempts++;
+
+				boolean alreadyApplied = alreadySelected(modificationPoint, elementFromIngredient, operationType);
+
+				if (!alreadyApplied && !elementFromIngredient.getSignature()
+						.equals(modificationPoint.getCodeElement().getSignature())) {
+
+					continueSearching = !VariableResolver.fitInPlace(modificationPoint.getContextOfModificationPoint(),
+							elementFromIngredient);
+
+				}
+			}catch (Exception e) {
+				continueSearching = true;
 			}
-			CtElement elementFromIngredient = randomIngredient.getCode();
-
-			attempts++;
-
-			boolean alreadyApplied = alreadySelected(modificationPoint, elementFromIngredient, operationType);
-
-			if (!alreadyApplied && !elementFromIngredient.getSignature()
-					.equals(modificationPoint.getCodeElement().getSignature())) {
-
-				continueSearching = !VariableResolver.fitInPlace(modificationPoint.getContextOfModificationPoint(),
-						elementFromIngredient);
-
-			}
-
 			if (!continueSearching) {
 				IngredientSpaceScope scope = determineIngredientScope(modificationPoint.getCodeElement(),
 						elementFromIngredient);

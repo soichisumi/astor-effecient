@@ -49,10 +49,10 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpace(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
 
-        String modifyClassName = location.getCtClass().getQualifiedName();
+        String modifyClassName = location.getCtClass().getSimpleName();
         System.out.println("predict for: " + modifyClassName);
 
-        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromQualifiedName(modifyClassName), location);
+        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromClassName(modifyClassName), location);
         System.out.println("get ingredient from fixspace....");
         System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
         int res = locations == null ?
@@ -69,7 +69,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
             System.out.println("use default search");
             this.isRecommendedStmt = false;
             int size = fixSpace.size();
-            res = RandomManager.nextInt(size);
+            res = RandomManager.nextInt4Ingredient(size);
         } else {
             this.isRecommendedStmt = true;
             System.out.println("use prediction based search");
@@ -81,10 +81,10 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpaceSameFirst(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
         fixSpace=sortFixSpace(fixSpace);
-        String modifyClassName = location.getCtClass().getQualifiedName();
+        String modifyClassName = location.getCtClass().getSimpleName();
         System.out.println("predict for: " + modifyClassName);
 
-        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromQualifiedName(modifyClassName), location);
+        Set<AstLocation> locations = sr.getStatements(Util.getSourceCodeFromClassName(modifyClassName), location);
         System.out.println("get ingredient from fixspace....");
         System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
         int res = locations == null ?
@@ -101,7 +101,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
             System.out.println("use default search");
             this.isRecommendedStmt = false;
             int size = fixSpace.size();
-            res = RandomManager.nextInt(size);
+            res = RandomManager.nextInt4Ingredient(size);
         } else {
             this.isRecommendedStmt = true;
             System.out.println("use prediction based search");
@@ -123,11 +123,11 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpaceSorted(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
 
-        String modifyClassName = location.getCtClass().getQualifiedName();
+        String modifyClassName = location.getCtClass().getSimpleName();
         System.out.println("predict for: " + modifyClassName);
         int res=0;
-        for (int dist = 0; dist < 4; dist++) {
-            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromQualifiedName(modifyClassName), location,dist);
+        for (int dist = 0; dist < Util.DIST_THRESHOLD; dist++) {
+            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromClassName(modifyClassName), location,dist);
             System.out.println("get ingredient from fixspace....");
             System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
             res = locations == null ?
@@ -145,7 +145,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
                 System.out.println("use default search");
                 this.isRecommendedStmt = false;
                 int size = fixSpace.size();
-                res = RandomManager.nextInt(size);
+                res = RandomManager.nextInt4Ingredient(size);
             } else {
                 this.isRecommendedStmt = true;
                 System.out.println("use prediction based search");
@@ -158,11 +158,11 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
     protected CtCodeElement getNextStatementFromSpaceSortedAndSameFirst(ModificationPoint location, AstorOperator operationType, boolean isScopePackage) {    //ちょっとやばいコードを書くぞ
         List<CtCodeElement> fixSpace = this.ingredientSpace.getIngredients(location.getCodeElement());
         fixSpace=sortFixSpace(fixSpace);
-        String modifyClassName = location.getCtClass().getQualifiedName();
+        String modifyClassName = location.getCtClass().getSimpleName();
         System.out.println("predict for: " + modifyClassName);
         int res=0;
-        for (int dist = 0; dist < 4; dist++) {
-            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromQualifiedName(modifyClassName), location,dist);
+        for (int dist = 0; dist < Util.DIST_THRESHOLD; dist++) {
+            Set<AstLocation> locations = sr.getStatementsDistend(Util.getSourceCodeFromClassName(modifyClassName), location,dist);
             System.out.println("get ingredient from fixspace....");
             System.out.println("get ingredient for " + location.getCodeElement().toString() + " " + operationType.toString());
             res = locations == null ?
@@ -180,7 +180,7 @@ public class UniformEfficientIngredientSearch extends AstorCtSearchStrategy {
                 System.out.println("use default search");
                 this.isRecommendedStmt = false;
                 int size = fixSpace.size();
-                res = RandomManager.nextInt(size);
+                res = RandomManager.nextInt4Ingredient(size);
             } else {
                 this.isRecommendedStmt = true;
                 System.out.println("use prediction based search");

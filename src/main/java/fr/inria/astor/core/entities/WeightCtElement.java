@@ -55,7 +55,7 @@ public class WeightCtElement {
 
 	public static WeightCtElement selectElementWeightBalanced(List<WeightCtElement> we) {
 		WeightCtElement selected = null;
-		double d = RandomManager.nextDouble();
+		double d = RandomManager.nextDouble4Mutation();
 		
 		for (int i = 0; (selected == null && i < we.size()); i++) {
 			if (d <= we.get(i).accum) {

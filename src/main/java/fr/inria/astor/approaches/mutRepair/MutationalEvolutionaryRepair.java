@@ -122,7 +122,7 @@ public class MutationalEvolutionaryRepair extends JGenProg {
 	}
 
 	protected CtElement uniformRandom(List<MutantCtElement> mutations) {
-		return mutations.get(RandomManager.nextInt(mutations.size())).getElement();
+		return mutations.get(RandomManager.nextInt4Mutation(mutations.size())).getElement();
 	}
 	/**
 	 * 

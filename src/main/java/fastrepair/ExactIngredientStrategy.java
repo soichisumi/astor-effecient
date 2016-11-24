@@ -55,29 +55,34 @@ public class ExactIngredientStrategy extends UniformEfficientIngredientSearch {
         int elementsFromFixSpace = getSpaceSize(modificationPoint, operationType);
 
         while (continueSearching && attempts < elementsFromFixSpace) {  //取り出した回数がFixSpaceのサイズが上回ってないかみてるので、取り出すIndexが被ってはいけない。
-            Ingredient exactIngredient = super.getFixIngredient(modificationPoint, operationType);
+            Ingredient exactIngredient=null;
+            CtElement elementFromIngredient=null;
+            try {
+                exactIngredient = super.getFixIngredient(modificationPoint, operationType);
 
-            if (exactIngredient == null || exactIngredient.getCode() == null) {
-                return null;
-            }
-            CtElement elementFromIngredient = exactIngredient.getCode();
+                if (exactIngredient == null || exactIngredient.getCode() == null) {
+                    return null;
+                }
+                elementFromIngredient = exactIngredient.getCode();
 
-            attempts++;
+                attempts++;
 
-            boolean alreadyApplied = alreadySelected(modificationPoint, elementFromIngredient, operationType);
+                boolean alreadyApplied = alreadySelected(modificationPoint, elementFromIngredient, operationType);
 
-            if (!alreadyApplied && !elementFromIngredient.getSignature()
-                    .equals(modificationPoint.getCodeElement().getSignature())) {
+                if (!alreadyApplied && !elementFromIngredient.getSignature()
+                        .equals(modificationPoint.getCodeElement().getSignature())) {
 
-                continueSearching = !VariableResolver.fitInPlace(modificationPoint.getContextOfModificationPoint(),
-                        elementFromIngredient);
+                    continueSearching = !VariableResolver.fitInPlace(modificationPoint.getContextOfModificationPoint(),
+                            elementFromIngredient);
 
+                }
+            }catch (Exception e){
+                continueSearching=true;
             }
 
             if (!continueSearching) {
                 IngredientSpaceScope scope = determineIngredientScope(modificationPoint.getCodeElement(),
                         elementFromIngredient);
-
                 return new Ingredient(elementFromIngredient, scope);
             }
 
