@@ -28,7 +28,7 @@ public class RandomManager {
 
     private static Integer opeIntTable[]=null;
 
-    public static int ingCounter=0;
+    public static int ingCounter=0;     //デバッグ出力用
     public static int opeCounter=0;
     public static int mutCounter=0;
 
