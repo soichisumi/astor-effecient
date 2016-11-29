@@ -18,7 +18,6 @@ import java.util.Random;
  *         all randomness requirements should be mediated through this class.
  */
 public class RandomManager {
-
     private static Random randomGenerator4IngredientInt = null;
     private static Random randomGenerator4IngredientDouble = null;
     private static Random randomGenerator4OperationInt = null;

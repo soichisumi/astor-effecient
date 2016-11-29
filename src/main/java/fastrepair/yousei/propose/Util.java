@@ -154,7 +154,7 @@ public class Util {
 
         return statements;
     }
-    public static Set<AstLocation> getASTLocationsDisted(String source, AstVector vector, SourcePosition sp,int dist) throws Exception{   //boolean packageと、そのパース結果を追加
+    public static Set<AstLocation> getASTLocationsDistened(String source, AstVector vector, SourcePosition sp, int dist) throws Exception{   //boolean packageと、そのパース結果を追加
         Multimap<AstVector, AstLocation> result = MultimapBuilder.hashKeys().arrayListValues().build();//ソースコードの文とその場所の集合
         ASTParser parser = ASTParser.newParser(AST.JLS8);
 

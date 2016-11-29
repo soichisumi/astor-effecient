@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import com.sun.deploy.uitoolkit.impl.awt.AWTAppletAdapter;
 import com.sun.glass.ui.Size;
 import com.sun.org.apache.xml.internal.serialize.LineSeparator;
+import fastrepair.yousei.GeneralUtil;
 import fr.inria.astor.core.setup.RandomManager;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Level;
@@ -121,6 +122,13 @@ public abstract class AstorCoreEngine {
 
         currentStat.passFailingval1 = 0;
         currentStat.passFailingval2 = 0;
+
+        {   //ｓｅｔ target revision id
+            int targetId;
+            String tmp= ConfigurationProperties.getProperty("location");
+            targetId= Integer.valueOf(tmp.split("math_")[1].split("_buggy")[0]);
+            ConfigurationProperties.setProperty("bugRevisionId", GeneralUtil.getTargetRevisionID(targetId));
+        }
 
         dateInitEvolution = new Date();
 

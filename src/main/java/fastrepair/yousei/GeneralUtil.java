@@ -17,6 +17,8 @@ import weka.filters.unsupervised.attribute.Remove;
 
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,27 @@ public class GeneralUtil {
     public static final int SMALLTHRESHOLD = 5;
     public static final File workingDir = new File("WorkingDir");
     public static int smallchange = 0;       //Utilなのに非定数をメンバに持つ激ヤバ実装。不要。
+
+    public static String getTargetRevisionID(int targetNum){
+        try(InputStream is = Files.newInputStream(Paths.get("src/main/resources/commit-db.txt"))){
+            BufferedReader br= new BufferedReader(new InputStreamReader(is));
+            String s;
+            int counter=1;
+            while((s=br.readLine())!=null){
+                if(counter==targetNum) {
+                    String res=s.split(",")[1];
+                    System.out.println("obtained commit id is: "+res);
+                    return res;
+                }
+                counter++;
+            }
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        System.out.println("cannot obtain revisionID");
+        return "1780da711d88f669e29e0517f83d692fb80099db";
+    }
 
     // Reverseで最古から最新へ
     public static RevWalk getInitializedRevWalk(Repository repo,
